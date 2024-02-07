@@ -1,0 +1,53 @@
+#Kafka 
+wget https://archive.apache.org/dist/kafka/2.8.0/kafka_2.12-2.8.0.tgz
+
+#Extract Kafka from the zip file
+tar -xzf kafka_2.12-2.8.0.tgz
+
+#We need to change the direction for further analysis
+cd kafka_2.12-2.8.0
+
+#ZooKeeper, as of this version, is required for Kafka to work.
+#ZooKeeper is responsible for the overall management of a Kafka cluster.
+#It monitors the Kafka brokers and notifies Kafka if any broker or partition goes down, or if a new broker or partition comes up
+
+#We create a new Topic with two partitions
+bin/kafka-topics.sh --bootstrap-server localhost:9092 --create --topic bankbranch  --partitions 2
+
+#List out the topics
+bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
+
+#To describe a topic. 
+bin/kafka-topics.sh --bootstrap-server localhost:9092 --describe --topic bankbranch
+
+#If no message keys are specified, 
+#messages will be published to the partitions 
+#in an alternating sequence
+
+#To create a producer 
+bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic bankbranch 
+
+#To create a consumer
+bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic bankbranch --from-beginning
+
+#To stop the producer and consumer using
+Ctrl + C
+
+#To start a new producer with message key
+bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic bankbranch --property parse.key=true --property key.separator=:
+
+#To start a new consumer with message key
+bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic bankbranch --from-beginning --property print.key=true --property key.separator=:
+
+#To create consumer group
+bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic bankbranch --group atm-app
+
+#Show the details about the consumer group
+bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group atm-app
+
+#Reset the offset to the earliest messages
+bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092  --topic bankbranch --group atm-app --reset-offsets --to-earliest --execute
+
+#Reset the offset to any position
+bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092  --topic bankbranch --group atm-app --reset-offsets --shift-by -2 --execute
+

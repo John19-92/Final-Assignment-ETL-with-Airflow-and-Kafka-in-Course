@@ -1,0 +1,132 @@
+#We use this below command to start airflow 
+start_airflow
+#To list out all the existing DAGs
+airflow dags list
+#To list out all the existing tasks in a given DAGS
+airflow tasks list example_bash_operator
+#To unpause a given DAG
+airflow dags unpause tutorial
+#To pause a given DAG
+airflow dags pause tutorial
+
+Exercise lab3
+# import the libraries
+
+from datetime import timedelta
+# The DAG object; we'll need this to instantiate a DAG
+from airflow import DAG
+# Operators; we need this to write tasks!
+from airflow.operators.bash_operator import BashOperator
+# This makes scheduling easy
+from airflow.utils.dates import days_ago
+
+
+#defining DAG arguments
+
+# You can override them on a per-task basis during operator initialization
+default_args = {
+    'owner': 'Ramesh Sannareddy',
+    'start_date': days_ago(0),
+    'email': ['ramesh@somemail.com'],
+    'email_on_failure': True,
+    'email_on_retry': True,
+    'retries': 1,
+    'retry_delay': timedelta(minutes=5),
+}
+
+
+# define the DAG
+dag = DAG(
+    dag_id='sample-etl-dag',
+    default_args=default_args,
+    description='Sample ETL DAG using Bash',
+    schedule_interval=timedelta(days=1),
+)
+
+# define the tasks
+
+# define the first task named extract
+extract = BashOperator(
+    task_id='extract',
+    bash_command='echo "extract"',
+    dag=dag,
+)
+
+# define the second task named transform
+transform = BashOperator(
+    task_id='transform',
+    bash_command='echo "transform"',
+    dag=dag,
+)
+
+# define the third task named load
+
+load = BashOperator(
+    task_id='load',
+    bash_command='echo "load"',
+    dag=dag,
+)
+
+# task pipeline
+extract >> transform >> load
+
+
+
+Exercise 4
+# import the libraries
+
+from datetime import timedelta
+# The DAG object; we'll need this to instantiate a DAG
+from airflow import DAG
+# Operators; we need this to write tasks!
+from airflow.operators.bash_operator import BashOperator
+# This makes scheduling easy
+from airflow.utils.dates import days_ago
+
+#defining DAG arguments
+
+# You can override them on a per-task basis during operator initialization
+default_args = {
+    'owner': 'Ramesh Sannareddy',
+    'start_date': days_ago(0),
+    'email': ['ramesh@somemail.com'],
+    'email_on_failure': False,
+    'email_on_retry': False,
+    'retries': 1,
+    'retry_delay': timedelta(minutes=5),
+}
+
+# defining the DAG
+
+# define the DAG
+dag = DAG(
+    'my-first-dag',
+    default_args=default_args,
+    description='My first DAG',
+    schedule_interval=timedelta(days=1),
+)
+
+# define the tasks
+
+# define the first task
+
+extract = BashOperator(
+    task_id='extract',
+    bash_command='cut -d":" -f1,3,6 /etc/passwd > /home/project/airflow/dags/extracted-data.txt',
+    dag=dag,
+)
+
+# define the second task
+transform_and_load = BashOperator(
+    task_id='transform',
+    bash_command='tr ":" "," < /home/project/airflow/dags/extracted-data.txt > /home/project/airflow/dags/transformed-data.csv',
+    dag=dag,
+)
+
+# task pipeline
+extract >> transform_and_load
+
+#verify the existence of a DAG
+airflow dags list|grep "my-first-dag"
+#To list out the tasks of a DAG
+airflow tasks list my-first-dag
